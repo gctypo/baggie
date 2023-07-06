@@ -17,14 +17,9 @@ module Program =
             .AddJsonFile("AppSettings.json", true, true)
             .Build()
 
-    [<EntryPoint>]
-    let main argv =
-        let token = appConfig.["discord.token"]
-        printfn "Hello world"
-
+    let startBot (token: string) =
         let config = DiscordConfiguration ()
         config.Token <- token
-        config.MinimumLogLevel <- LogLevel.Debug
         config.TokenType <- TokenType.Bot
         config.Intents <- DiscordIntents.GuildMessages
             ||| DiscordIntents.Guilds
@@ -48,4 +43,21 @@ module Program =
         |> Async.AwaitTask
         |> Async.RunSynchronously
 
-        1
+    [<EntryPoint>]
+    let main argv =
+        let tokenPath = appConfig.["discord.tokenpath"]
+        if isNull tokenPath then
+            eprintf "ERROR: Config discord.tokenpath is null"
+            1
+        elif not (File.Exists tokenPath) then
+            eprintf $"ERROR: File %s{tokenPath} not found"
+            1
+        else
+            let token = File.ReadAllText tokenPath
+            if token.Length >= 1 then
+                printfn "Found token at %s" tokenPath
+                startBot token
+                0
+            else
+                failwith $"ERROR: Could not find token at '%s{tokenPath}'!"
+                1
