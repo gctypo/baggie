@@ -6,16 +6,19 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Content Include="AppSettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+        <Compile Include="Baggie.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Compile Include="Program.fs" />
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="AppSettings.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
+      <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-01619" />
+      <PackageReference Include="DSharpPlus.CommandsNext" Version="5.0.0-nightly-01619" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0-preview.5.23280.8" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0-preview.5.23280.8" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.5.23280.8" />
