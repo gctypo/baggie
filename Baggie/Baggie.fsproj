@@ -9,11 +9,9 @@
       <Content Include="AppSettings.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-        <Compile Include="Baggie.fs" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Include="Program.fs" />
+      <Compile Include="AppSettings.fs" />
+      <Compile Include="Baggie.fs" />
+      <Compile Include="Program.fs" />
     </ItemGroup>
 
     <ItemGroup>

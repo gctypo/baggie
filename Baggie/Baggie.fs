@@ -21,9 +21,18 @@ type BaggieBot () =
 
     let guildsLastUsed = Dictionary<uint64, DateTime>()
 
-    let minTime = TimeSpan.FromSeconds(30)
+    let minTime =
+        let defSec = 60
+        try
+            AppSettings.appConfig["baggie.timeoutSec"]
+            |> double
+        with | :? FormatException as ex ->
+            eprintf $"Failed to convert %s{ex.Source} to int"
+            eprintf $"{ex}"
+            defSec
+        |> TimeSpan.FromSeconds
 
-    let tooSoon (ctx: CommandContext) : bool =
+    let isTooSoon (ctx: CommandContext) : bool =
         if not (guildsLastUsed.ContainsKey(ctx.Guild.Id)) then
             false
         else
@@ -54,16 +63,12 @@ type BaggieBot () =
     let respondTo (ctx: CommandContext) (message: string) : Task =
         task {
             do! ctx.TriggerTypingAsync()
-            let! _ =
-                message
-                |> ctx.RespondAsync
-
+            let! _ = message |> ctx.RespondAsync
             return ()
-        }
-        :> Task
+        } :> Task
 
     let sendPasta (ctx: CommandContext) (pasta: string) : Task =
-        if tooSoon ctx then
+        if isTooSoon ctx then
             logReject ctx
             Task.CompletedTask
         else

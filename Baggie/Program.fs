@@ -4,15 +4,8 @@ module Program =
 
     open System.Threading.Tasks
     open System.IO
-    open Microsoft.Extensions.Configuration
     open DSharpPlus
     open DSharpPlus.CommandsNext
-
-    let private appConfig =
-        ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("AppSettings.json", true, true)
-            .Build()
 
     let private startBot (token: string) =
         let config = DiscordConfiguration ()
@@ -61,7 +54,7 @@ module Program =
     [<EntryPoint>]
     let main argv =
         try
-            appConfig["discord.tokenpath"]
+            AppSettings.appConfig["discord.tokenpath"]
             |> retrieveToken
             |> startBot
             0
