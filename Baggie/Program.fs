@@ -61,7 +61,7 @@ module Program =
     [<EntryPoint>]
     let main argv =
         try
-            appConfig.["discord.tokenpath"]
+            appConfig["discord.tokenpath"]
             |> retrieveToken
             |> startBot
             0

@@ -16,30 +16,25 @@ type BaggieBot () =
         huggie wuggie poo? What about a kith? Baggie Waggie wan a kith? \
         UwU ehe te nandayo~*"
 
+    let respondTo (ctx: CommandContext) (message: string) : Task =
+        task {
+            do!
+                ctx.TriggerTypingAsync()
+
+            let! _ =
+                message
+                |> ctx.RespondAsync
+
+            return ()
+        }
+        :> Task
+
     [<Command "baggie">]
     let baggie (ctx: CommandContext) =
-        task {
-            do!
-                ctx.TriggerTypingAsync()
-
-            let! _ =
-                PASTA
-                |> ctx.RespondAsync
-
-            return ()
-        }
-        :> Task
+        PASTA
+        |> respondTo ctx
 
     [<Command "baggie">]
-    let baggie (ctx: CommandContext, user: DiscordMember) =
-        task {
-            do!
-                ctx.TriggerTypingAsync()
-
-            let! _ =
-                $"%s{user.Mention} %s{PASTA}"
-                |> ctx.RespondAsync
-
-            return ()
-        }
-        :> Task
+    let baggie (ctx: CommandContext) (user: DiscordMember) =
+        user.Mention + " " + PASTA
+        |> respondTo ctx
