@@ -1,10 +1,13 @@
 namespace Baggie
 
+open System
+open System.Collections.Generic
 open System.Threading.Tasks
 
 open DSharpPlus.CommandsNext
 open DSharpPlus.CommandsNext.Attributes
 open DSharpPlus.Entities
+open Microsoft.Extensions.Logging
 
 type BaggieBot () =
 
@@ -16,11 +19,41 @@ type BaggieBot () =
         huggie wuggie poo? What about a kith? Baggie Waggie wan a kith? \
         UwU ehe te nandayo~*"
 
+    let guildsLastUsed = Dictionary<uint64, DateTime>()
+
+    let minTime = TimeSpan.FromSeconds(30)
+
+    let tooSoon (ctx: CommandContext) : bool =
+        if not (guildsLastUsed.ContainsKey(ctx.Guild.Id)) then
+            false
+        else
+            let elapsed = DateTime.Now - guildsLastUsed[ctx.Guild.Id]
+            elapsed < minTime
+
+    let registerUsage (ctx: CommandContext) =
+        if guildsLastUsed.ContainsKey(ctx.Guild.Id) then
+            guildsLastUsed[ctx.Guild.Id] <- DateTime.Now
+        else
+            guildsLastUsed.Add(ctx.Guild.Id, DateTime.Now)
+
+
+    let logReject (ctx: CommandContext) =
+        let elapsed = DateTime.Now - guildsLastUsed[ctx.Guild.Id]
+        ctx.Client.Logger.Log(
+            LogLevel.Information,
+            $"Rejecting {ctx.Command} from user {ctx.User.Username}, \
+            only waited %.1f{elapsed.TotalSeconds} of {minTime.Seconds} sec"
+        )
+
+    let logPasta (ctx: CommandContext) =
+        ctx.Client.Logger.Log(
+            LogLevel.Information,
+            $"Invoking {ctx.Command} from user {ctx.User.Username}"
+        )
+
     let respondTo (ctx: CommandContext) (message: string) : Task =
         task {
-            do!
-                ctx.TriggerTypingAsync()
-
+            do! ctx.TriggerTypingAsync()
             let! _ =
                 message
                 |> ctx.RespondAsync
@@ -29,12 +62,20 @@ type BaggieBot () =
         }
         :> Task
 
+    let sendPasta (ctx: CommandContext) (pasta: string) : Task =
+        if tooSoon ctx then
+            logReject ctx
+            Task.CompletedTask
+        else
+            registerUsage ctx
+            logPasta ctx
+            pasta |> respondTo ctx
+
     [<Command "baggie">]
     let baggie (ctx: CommandContext) =
-        PASTA
-        |> respondTo ctx
+        PASTA |> sendPasta ctx
 
     [<Command "baggie">]
     let baggie (ctx: CommandContext) (user: DiscordMember) =
         user.Mention + " " + PASTA
-        |> respondTo ctx
+        |> sendPasta ctx
