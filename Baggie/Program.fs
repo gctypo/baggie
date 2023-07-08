@@ -38,26 +38,35 @@ module Program =
         |> Async.AwaitTask
         |> Async.RunSynchronously
 
-        printfn "Ready."
+        printfn "========== Ready =========="
         Task.Delay(-1)
         |> Async.AwaitTask
         |> Async.RunSynchronously
 
+    let validateToken (token: string) =
+        if isNull token then nullArg (nameof token)
+        elif token.Length <= 0 then invalidArg (nameof token) "Token cannot be empty"
+        else token
+
+    let retrieveToken (tokenPath: string) =
+        if isNull tokenPath then
+            nullArg (nameof tokenPath)
+        elif not (File.Exists(tokenPath)) then
+            raise (FileNotFoundException("Token path not found", tokenPath))
+        else
+            printfn "Reading token from %s" tokenPath
+            let token =
+                File.ReadAllText(tokenPath)
+                |> validateToken
+            printfn $"Token found (len = {token.Length})"
+            token
+
     [<EntryPoint>]
     let main argv =
-        let tokenPath = appConfig.["discord.tokenpath"]
-        if isNull tokenPath then
-            eprintf "ERROR: Config discord.tokenpath is null"
-            1
-        elif not (File.Exists tokenPath) then
-            eprintf $"ERROR: File %s{tokenPath} not found"
-            1
-        else
-            let token = File.ReadAllText tokenPath
-            if token.Length >= 1 then
-                printfn "Found token at %s" tokenPath
-                startBot token
-                0
-            else
-                failwith $"ERROR: Could not find token at '%s{tokenPath}'!"
-                1
+        try
+            appConfig.["discord.tokenpath"]
+            |> retrieveToken
+            |> startBot
+            0
+        with
+            | ex -> eprintf $"ERROR: {ex}"; 1
