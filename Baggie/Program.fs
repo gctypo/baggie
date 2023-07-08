@@ -1,8 +1,5 @@
 ﻿namespace Baggie
 
-open Microsoft.Extensions.Logging
-
-// Following: https://brandewinder.com/2021/10/30/fsharp-discord-bot/
 module Program =
 
     open System.Threading.Tasks
@@ -11,13 +8,13 @@ module Program =
     open DSharpPlus
     open DSharpPlus.CommandsNext
 
-    let appConfig =
+    let private appConfig =
         ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("AppSettings.json", true, true)
             .Build()
 
-    let startBot (token: string) =
+    let private startBot (token: string) =
         let config = DiscordConfiguration ()
         config.Token <- token
         config.TokenType <- TokenType.Bot
@@ -43,12 +40,12 @@ module Program =
         |> Async.AwaitTask
         |> Async.RunSynchronously
 
-    let validateToken (token: string) =
+    let private validateToken (token: string) =
         if isNull token then nullArg (nameof token)
         elif token.Length <= 0 then invalidArg (nameof token) "Token cannot be empty"
         else token
 
-    let retrieveToken (tokenPath: string) =
+    let private retrieveToken (tokenPath: string) =
         if isNull tokenPath then
             nullArg (nameof tokenPath)
         elif not (File.Exists(tokenPath)) then
