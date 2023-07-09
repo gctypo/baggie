@@ -1,5 +1,7 @@
 ﻿namespace Baggie
 
+open System.Reflection
+
 module Program =
 
     open System.Threading.Tasks
@@ -51,12 +53,29 @@ module Program =
             printfn $"Token found (len = {token.Length})"
             token
 
+    let helpText =
+        "Usage: baggie\n   or: baggie --version\n\n \
+        Runs 'baggie' Discord bot. ^C to exit.\n \
+        Expects token at path set for 'discord.tokenpath' in AppSettings.json."
+
     [<EntryPoint>]
     let main argv =
-        try
-            AppSettings.appConfig["discord.tokenpath"]
-            |> retrieveToken
-            |> startBot
-            0
-        with
-            | ex -> eprintf $"ERROR: {ex}"; 1
+        if argv.Length > 0 then
+            if argv[0] = "--version" then
+                Assembly.GetExecutingAssembly().GetName().Version.ToString()
+                |> printfn "baggie version %s"
+                0
+            elif argv[0] = "--help" then
+                printfn "%s" helpText
+                0
+            else
+                eprintfn "%s" helpText
+                1
+        else
+            try
+                AppSettings.appConfig["discord.tokenpath"]
+                |> retrieveToken
+                |> startBot
+                0
+            with
+                | ex -> eprintf $"ERROR: {ex}"; 1
