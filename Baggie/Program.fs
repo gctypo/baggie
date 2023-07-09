@@ -1,6 +1,7 @@
 ﻿namespace Baggie
 
 open System.Reflection
+open Microsoft.Extensions.DependencyInjection
 
 module Program =
 
@@ -19,8 +20,14 @@ module Program =
 
         let discord = new DiscordClient(config)
 
+        let services =
+            ServiceCollection()
+                .AddSingleton<AppConfigProvider>()
+                .BuildServiceProvider()
+
         let commandsConfig = CommandsNextConfiguration ()
         commandsConfig.StringPrefixes <- ["!"; "/"]
+        commandsConfig.Services <- services
 
         let commands = discord.UseCommandsNext(commandsConfig)
         commands.RegisterCommands<BaggieBot>()
@@ -58,6 +65,8 @@ module Program =
         Runs 'baggie' Discord bot. ^C to exit.\n \
         Expects token at path set for 'discord.tokenpath' in AppSettings.json."
 
+    let appConfig = AppConfigProvider() :> IAppConfigProvider
+
     [<EntryPoint>]
     let main argv =
         if argv.Length > 0 then
@@ -73,7 +82,7 @@ module Program =
                 1
         else
             try
-                AppSettings.appConfig["discord.tokenpath"]
+                appConfig.GetConfigValue "discord.tokenpath"
                 |> retrieveToken
                 |> startBot
                 0

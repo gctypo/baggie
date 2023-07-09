@@ -10,7 +10,6 @@ open DSharpPlus.Entities
 open Microsoft.Extensions.Logging
 
 type BaggieBot () =
-
     inherit BaseCommandModule ()
 
     // I'm not sorry.
@@ -21,10 +20,12 @@ type BaggieBot () =
 
     let guildsLastUsed = Dictionary<uint64, DateTime>()
 
+    let mutable appConfig : IAppConfigProvider = AppConfigProvider()
+
     let minTime =
         let defSec = 60
         try
-            AppSettings.appConfig["baggie.timeoutSec"]
+            appConfig.GetConfigValue "baggie.timeoutSec"
             |> double
         with | :? FormatException as ex ->
             eprintf $"Failed to convert %s{ex.Source} to int"
@@ -44,7 +45,6 @@ type BaggieBot () =
             guildsLastUsed[ctx.Guild.Id] <- DateTime.Now
         else
             guildsLastUsed.Add(ctx.Guild.Id, DateTime.Now)
-
 
     let logReject (ctx: CommandContext) =
         let elapsed = DateTime.Now - guildsLastUsed[ctx.Guild.Id]
@@ -84,3 +84,5 @@ type BaggieBot () =
     let baggie (ctx: CommandContext) (user: DiscordMember) =
         user.Mention + " " + PASTA
         |> sendPasta ctx
+
+    member this.AppConfig with set (value) = appConfig <- value
