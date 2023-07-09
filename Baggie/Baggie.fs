@@ -19,11 +19,11 @@ type BaggieBot () =
         huggie wuggie poo? What about a kith? Baggie Waggie wan a kith? \
         UwU ehe te nandayo~*"
 
-    let guildsLastUsed = Dictionary<uint64, DateTime>()
+    let guildsLastUsed = Dictionary<uint64, DateTime> ()
 
-    let mutable appConfig : IAppConfigProvider = AppConfigProvider()
+    let mutable appConfig : IAppConfigProvider = AppConfigProvider ()
 
-    let mutable time : ITimeNowProvider = TimeNowProvider()
+    let mutable time : ITimeNowProvider = TimeNowProvider ()
 
     let minTime =
         let DEF_SEC = 60

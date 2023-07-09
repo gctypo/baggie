@@ -11,7 +11,7 @@ open Microsoft.Extensions.DependencyInjection
 
 module Program =
 
-    let file : IFileContentProvider = FileContentProvider()
+    let file : IFileContentProvider = FileContentProvider ()
 
     let private startBot (token: string) =
         let config = DiscordConfiguration ()
@@ -47,9 +47,12 @@ module Program =
         |> Async.RunSynchronously
 
     let private validateToken (token: string) =
-        if isNull token then nullArg (nameof token)
-        elif token.Length <= 0 then invalidArg (nameof token) "Token cannot be empty"
-        else token
+        if isNull token then
+            nullArg (nameof token)
+        elif token.Length <= 0 then
+            invalidArg (nameof token) "Token cannot be empty"
+        else
+            token
 
     let private retrieveToken (tokenPath: string) =
         if isNull tokenPath then
@@ -69,7 +72,7 @@ module Program =
         Runs 'baggie' Discord bot. ^C to exit.\n \
         Expects token at path set for 'discord.tokenpath' in AppSettings.json."
 
-    let appConfig = AppConfigProvider() :> IAppConfigProvider
+    let appConfig : IAppConfigProvider = AppConfigProvider ()
 
     [<EntryPoint>]
     let main argv =
