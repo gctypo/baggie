@@ -7,7 +7,7 @@ open Baggie
 type FakeTimeProvider (offsetSec: int) =
     let START_TIME = DateTime (2000, 1, 1)
 
-    let current : DateTime =
+    let mutable current : DateTime =
         START_TIME + TimeSpan.FromSeconds(offsetSec)
 
     new () = FakeTimeProvider 0
@@ -15,8 +15,10 @@ type FakeTimeProvider (offsetSec: int) =
     interface ITimeNowProvider with
         member this.Now = current
 
+    member this.Now = (this :> ITimeNowProvider).Now
+
     member this.OffsetTime (sec: int) =
-        current = current.AddSeconds(sec)
+        current <- current.AddSeconds(sec)
 
 type FakeConfigProvider (timeoutStr: string) =
     interface IAppConfigProvider with
