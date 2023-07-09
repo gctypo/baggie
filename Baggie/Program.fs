@@ -26,6 +26,7 @@ module Program =
         let services =
             ServiceCollection()
                 .AddSingleton<AppConfigProvider>()
+                .AddSingleton<TimeNowProvider>()
                 .BuildServiceProvider()
 
         let commandsConfig = CommandsNextConfiguration ()

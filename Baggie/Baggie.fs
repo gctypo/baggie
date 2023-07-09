@@ -7,6 +7,7 @@ open System.Threading.Tasks
 open DSharpPlus.CommandsNext
 open DSharpPlus.CommandsNext.Attributes
 open DSharpPlus.Entities
+
 open Microsoft.Extensions.Logging
 
 type BaggieBot () =
@@ -22,32 +23,34 @@ type BaggieBot () =
 
     let mutable appConfig : IAppConfigProvider = AppConfigProvider()
 
+    let mutable time : ITimeNowProvider = TimeNowProvider()
+
     let minTime =
-        let defSec = 60
+        let DEF_SEC = 60
         try
             appConfig.GetConfigValue "baggie.timeoutSec"
             |> double
         with | :? FormatException as ex ->
             eprintf $"Failed to convert %s{ex.Source} to int"
             eprintf $"{ex}"
-            defSec
+            DEF_SEC
         |> TimeSpan.FromSeconds
 
     let isTooSoon (ctx: CommandContext) : bool =
         if not (guildsLastUsed.ContainsKey(ctx.Guild.Id)) then
             false
         else
-            let elapsed = DateTime.Now - guildsLastUsed[ctx.Guild.Id]
+            let elapsed = time.Now - guildsLastUsed[ctx.Guild.Id]
             elapsed < minTime
 
     let registerUsage (ctx: CommandContext) =
         if guildsLastUsed.ContainsKey(ctx.Guild.Id) then
-            guildsLastUsed[ctx.Guild.Id] <- DateTime.Now
+            guildsLastUsed[ctx.Guild.Id] <- time.Now
         else
-            guildsLastUsed.Add(ctx.Guild.Id, DateTime.Now)
+            guildsLastUsed.Add(ctx.Guild.Id, time.Now)
 
     let logReject (ctx: CommandContext) =
-        let elapsed = DateTime.Now - guildsLastUsed[ctx.Guild.Id]
+        let elapsed = time.Now - guildsLastUsed[ctx.Guild.Id]
         ctx.Client.Logger.Log(
             LogLevel.Information,
             $"Rejecting {ctx.Command} from user {ctx.User.Username}, \
@@ -85,4 +88,8 @@ type BaggieBot () =
         user.Mention + " " + PASTA
         |> sendPasta ctx
 
-    member this.AppConfig with set (value) = appConfig <- value
+    member this.AppConfig
+        with public set value = appConfig <- value
+
+    member this.TimeProvider
+        with public set value = time <- value
