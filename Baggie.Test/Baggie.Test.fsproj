@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="FakeProviders.fs" />
         <Compile Include="Baggie.Test.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>

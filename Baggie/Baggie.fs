@@ -93,3 +93,6 @@ type BaggieBot () =
 
     member this.TimeProvider
         with public set value = time <- value
+
+    member this.LastUsed
+        with public get () = guildsLastUsed
