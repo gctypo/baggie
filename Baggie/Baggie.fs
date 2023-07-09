@@ -36,31 +36,15 @@ type BaggieBot () =
             DEF_SEC
         |> TimeSpan.FromSeconds
 
-    let isTooSoon (guildId: uint64) : bool =
-        if not (guildsLastUsed.ContainsKey(guildId)) then
-            false
-        else
-            let elapsed = time.Now - guildsLastUsed[guildId]
-            elapsed < minTime
+    let logPasta (logger: ILogger) (command: Command) (username: string) =
+        logger.Log (LogLevel.Information, $"Invoking {command} from user {username}")
 
-    let registerUsage (guildId: uint64) =
-        if guildsLastUsed.ContainsKey(guildId) then
-            guildsLastUsed[guildId] <- time.Now
-        else
-            guildsLastUsed.Add(guildId, time.Now)
-
-    let logReject (logger: ILogger, command: Command, username: string, guildId: uint64) =
+    let logReject (logger: ILogger) (command: Command) (username: string) (guildId: uint64) =
         let elapsed = time.Now - guildsLastUsed[guildId]
         logger.Log(
             LogLevel.Information,
             $"Rejecting {command} from user {username}, \
             only waited %.1f{elapsed.TotalSeconds} of {minTime.Seconds} sec"
-        )
-
-    let logPasta (logger: ILogger, command: Command, username: string) =
-        logger.Log(
-            LogLevel.Information,
-            $"Invoking {command} from user {username}"
         )
 
     let respondTo (ctx: CommandContext) (message: string) : Task =
@@ -70,29 +54,43 @@ type BaggieBot () =
             return ()
         } :> Task
 
-    let sendPasta (ctx: CommandContext) (pasta: string) : Task =
-        if isTooSoon ctx.Guild.Id then
-            logReject (ctx.Client.Logger, ctx.Command, ctx.User.Username, ctx.Guild.Id)
+    member x.MinTime = minTime
+
+    member x.AppConfig
+        with public set value = appConfig <- value
+
+    member x.TimeProvider
+        with public set value = time <- value
+
+    member x.LastUsed = guildsLastUsed
+
+    member public this.isTooSoon (guildId: uint64) : bool =
+        if not (guildsLastUsed.ContainsKey(guildId)) then
+            false
+        else
+            let elapsed = time.Now - guildsLastUsed[guildId]
+            elapsed < this.MinTime
+
+    member public x.registerUsage (guildId: uint64) =
+        if guildsLastUsed.ContainsKey(guildId) then
+            guildsLastUsed[guildId] <- time.Now
+        else
+            guildsLastUsed.Add(guildId, time.Now)
+
+    member private this.sendPasta (ctx: CommandContext) (pasta: string) : Task =
+        if this.isTooSoon ctx.Guild.Id then
+            logReject ctx.Client.Logger ctx.Command ctx.User.Username ctx.Guild.Id
             Task.CompletedTask
         else
-            registerUsage ctx.Guild.Id
-            logPasta (ctx.Client.Logger, ctx.Command, ctx.User.Username)
+            this.registerUsage ctx.Guild.Id
+            logPasta ctx.Client.Logger ctx.Command ctx.User.Username
             pasta |> respondTo ctx
 
     [<Command "baggie">]
-    let baggie (ctx: CommandContext) =
-        PASTA |> sendPasta ctx
+    member public this.baggie (ctx: CommandContext) =
+        PASTA |> this.sendPasta ctx
 
     [<Command "baggie">]
-    let baggie (ctx: CommandContext) (user: DiscordMember) =
+    member public this.baggiePing (ctx: CommandContext) (user: DiscordMember) =
         user.Mention + " " + PASTA
-        |> sendPasta ctx
-
-    member this.AppConfig
-        with public set value = appConfig <- value
-
-    member this.TimeProvider
-        with public set value = time <- value
-
-    member this.LastUsed
-        with public get () = guildsLastUsed
+        |> this.sendPasta ctx
