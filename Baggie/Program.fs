@@ -1,14 +1,17 @@
 ﻿namespace Baggie
 
 open System.Reflection
+open System.Threading.Tasks
+open System.IO
+
+open DSharpPlus
+open DSharpPlus.CommandsNext
+
 open Microsoft.Extensions.DependencyInjection
 
 module Program =
 
-    open System.Threading.Tasks
-    open System.IO
-    open DSharpPlus
-    open DSharpPlus.CommandsNext
+    let file : IFileContentProvider = FileContentProvider()
 
     let private startBot (token: string) =
         let config = DiscordConfiguration ()
@@ -50,12 +53,12 @@ module Program =
     let private retrieveToken (tokenPath: string) =
         if isNull tokenPath then
             nullArg (nameof tokenPath)
-        elif not (File.Exists(tokenPath)) then
+        elif not (file.Exists(tokenPath)) then
             raise (FileNotFoundException("Token path not found", tokenPath))
         else
             printfn "Reading token from %s" tokenPath
             let token =
-                File.ReadAllText(tokenPath)
+                file.ReadAllText(tokenPath)
                 |> validateToken
             printfn $"Token found (len = {token.Length})"
             token
