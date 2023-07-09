@@ -18,10 +18,10 @@ type FakeTimeProvider (offsetSec: int) =
     member this.OffsetTime (sec: int) =
         current = current.AddSeconds(sec)
 
-type FakeConfigProvider (timeoutSec: int) =
+type FakeConfigProvider (timeoutStr: string) =
     interface IAppConfigProvider with
         member this.GetConfigValue (key: string) =
             match key with
-            | "baggie.timeoutSec" -> $"{timeoutSec}"
+            | "baggie.timeoutSec" -> timeoutStr
             | "discord.tokenpath" -> "/tmp/baggie.tok"
             | _ -> raise (KeyNotFoundException($"Invalid config key {key}"))

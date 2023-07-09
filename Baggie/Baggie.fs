@@ -10,14 +10,17 @@ open DSharpPlus.Entities
 
 open Microsoft.Extensions.Logging
 
-type BaggieBot () =
-    inherit BaseCommandModule ()
-
+module BaggieVals =
     // I'm not sorry.
     let PASTA = "*D'awwww Baggie Waggie being all UwU and OwO on chat? \
         D'awwww wook he's so embawassed uWu Does Baggie Waggie need a \
         huggie wuggie poo? What about a kith? Baggie Waggie wan a kith? \
         UwU ehe te nandayo~*"
+
+    let DEFAULT_TIMEOUT_SEC : double = 60
+
+type BaggieBot () =
+    inherit BaseCommandModule ()
 
     let guildsLastUsed = Dictionary<uint64, DateTime> ()
 
@@ -25,15 +28,14 @@ type BaggieBot () =
 
     let mutable time : ITimeNowProvider = TimeNowProvider ()
 
-    let minTime =
-        let DEF_SEC = 60
+    let minTime () =
         try
             appConfig.GetConfigValue "baggie.timeoutSec"
             |> double
         with | :? FormatException as ex ->
             eprintf $"Failed to convert %s{ex.Source} to int"
             eprintf $"{ex}"
-            DEF_SEC
+            BaggieVals.DEFAULT_TIMEOUT_SEC
         |> TimeSpan.FromSeconds
 
     let logPasta (logger: ILogger) (command: Command) (username: string) =
@@ -44,7 +46,7 @@ type BaggieBot () =
         logger.Log(
             LogLevel.Information,
             $"Rejecting {command} from user {username}, \
-            only waited %.1f{elapsed.TotalSeconds} of {minTime.Seconds} sec"
+            only waited %.1f{elapsed.TotalSeconds} of {minTime().Seconds} sec"
         )
 
     let respondTo (ctx: CommandContext) (message: string) : Task =
@@ -54,7 +56,7 @@ type BaggieBot () =
             return ()
         } :> Task
 
-    member x.MinTime = minTime
+    member x.MinTime : TimeSpan = minTime ()
 
     member x.AppConfig
         with public set value = appConfig <- value
@@ -88,9 +90,9 @@ type BaggieBot () =
 
     [<Command "baggie">]
     member public this.baggie (ctx: CommandContext) =
-        PASTA |> this.sendPasta ctx
+        BaggieVals.PASTA |> this.sendPasta ctx
 
     [<Command "baggie">]
     member public this.baggiePing (ctx: CommandContext) (user: DiscordMember) =
-        user.Mention + " " + PASTA
+        user.Mention + " " + BaggieVals.PASTA
         |> this.sendPasta ctx
