@@ -36,31 +36,31 @@ type BaggieBot () =
             DEF_SEC
         |> TimeSpan.FromSeconds
 
-    let isTooSoon (ctx: CommandContext) : bool =
-        if not (guildsLastUsed.ContainsKey(ctx.Guild.Id)) then
+    let isTooSoon (guildId: uint64) : bool =
+        if not (guildsLastUsed.ContainsKey(guildId)) then
             false
         else
-            let elapsed = time.Now - guildsLastUsed[ctx.Guild.Id]
+            let elapsed = time.Now - guildsLastUsed[guildId]
             elapsed < minTime
 
-    let registerUsage (ctx: CommandContext) =
-        if guildsLastUsed.ContainsKey(ctx.Guild.Id) then
-            guildsLastUsed[ctx.Guild.Id] <- time.Now
+    let registerUsage (guildId: uint64) =
+        if guildsLastUsed.ContainsKey(guildId) then
+            guildsLastUsed[guildId] <- time.Now
         else
-            guildsLastUsed.Add(ctx.Guild.Id, time.Now)
+            guildsLastUsed.Add(guildId, time.Now)
 
-    let logReject (ctx: CommandContext) =
-        let elapsed = time.Now - guildsLastUsed[ctx.Guild.Id]
-        ctx.Client.Logger.Log(
+    let logReject (logger: ILogger, command: Command, username: string, guildId: uint64) =
+        let elapsed = time.Now - guildsLastUsed[guildId]
+        logger.Log(
             LogLevel.Information,
-            $"Rejecting {ctx.Command} from user {ctx.User.Username}, \
+            $"Rejecting {command} from user {username}, \
             only waited %.1f{elapsed.TotalSeconds} of {minTime.Seconds} sec"
         )
 
-    let logPasta (ctx: CommandContext) =
-        ctx.Client.Logger.Log(
+    let logPasta (logger: ILogger, command: Command, username: string) =
+        logger.Log(
             LogLevel.Information,
-            $"Invoking {ctx.Command} from user {ctx.User.Username}"
+            $"Invoking {command} from user {username}"
         )
 
     let respondTo (ctx: CommandContext) (message: string) : Task =
@@ -71,12 +71,12 @@ type BaggieBot () =
         } :> Task
 
     let sendPasta (ctx: CommandContext) (pasta: string) : Task =
-        if isTooSoon ctx then
-            logReject ctx
+        if isTooSoon ctx.Guild.Id then
+            logReject (ctx.Client.Logger, ctx.Command, ctx.User.Username, ctx.Guild.Id)
             Task.CompletedTask
         else
-            registerUsage ctx
-            logPasta ctx
+            registerUsage ctx.Guild.Id
+            logPasta (ctx.Client.Logger, ctx.Command, ctx.User.Username)
             pasta |> respondTo ctx
 
     [<Command "baggie">]
