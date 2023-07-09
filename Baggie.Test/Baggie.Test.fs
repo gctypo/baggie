@@ -1,11 +1,9 @@
 module Baggie.Test
 
+open FsUnit
 open NUnit.Framework
 
-[<SetUp>]
-let Setup () = ()
-
 [<Test>]
-let Inst () =
+let InstFs () =
     BaggieBot()
-    |> Assert.IsNotNull
+    |> should not' (be Null)
