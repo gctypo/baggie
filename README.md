@@ -32,6 +32,6 @@ Bot login token path configured with `discord.tokenpath` config. Expects plain-t
 
 ## FAQ
 
-### #1: Why?
+### Why?
 
 You know this had to be done.
