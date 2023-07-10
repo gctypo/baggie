@@ -8,7 +8,7 @@ type IAppConfigProvider =
 
 type IFileContentProvider =
     abstract member Exists : path: string -> bool
-    abstract member ReadAllText: path: string -> string
+    abstract member ReadAllText : path: string -> string
 
 type FileContentProvider() =
     interface IFileContentProvider with

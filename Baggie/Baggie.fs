@@ -50,7 +50,7 @@ type BaggieBot () =
             only waited %.1f{elapsed.TotalSeconds} of {minTime().Seconds} sec"
         )
 
-    let respondTo (ctx: CommandContext) (message: string) : Task =
+    let respondTo (ctx: ContextAdapter) (message: string) : Task =
         task {
             do! ctx.TriggerTypingAsync()
             let! _ = message |> ctx.RespondAsync
@@ -80,7 +80,7 @@ type BaggieBot () =
         else
             guildsLastUsed.Add(guildId, time.Now)
 
-    member private this.sendPasta (ctx: CommandContext) (pasta: string) : Task =
+    member private this.sendPasta (ctx: ContextAdapter) (pasta: string) : Task =
         if this.isTooSoon ctx.Guild.Id then
             logReject ctx.Client.Logger ctx.Command ctx.User.Username ctx.Guild.Id
             Task.CompletedTask
@@ -91,9 +91,9 @@ type BaggieBot () =
 
     [<Command "baggie">]
     member public this.baggie (ctx: CommandContext) =
-        BaggieVals.PASTA |> this.sendPasta ctx
+        BaggieVals.PASTA |> this.sendPasta (ContextAdapter ctx)
 
     [<Command "baggie">]
     member public this.baggiePing (ctx: CommandContext) (user: DiscordMember) =
         user.Mention + " " + BaggieVals.PASTA
-        |> this.sendPasta ctx
+        |> this.sendPasta (ContextAdapter ctx)
