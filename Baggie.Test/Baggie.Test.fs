@@ -46,5 +46,24 @@ module TestBaggie =
         let (bot, time) = makeBot timeout
         bot.LastUsed.Add(420UL, time.Now)
         time.OffsetTime offset
+
         bot.isTooSoon 420UL
         |> should equal (offset < timeout)
+
+    [<Test>]
+    let registerUsage_new () =
+        let (bot, time) = makeBot 10
+        bot.registerUsage 420UL
+
+        bot.LastUsed[420UL] |> should equal time.Now
+        bot.LastUsed.Count |> should equal 1
+
+    [<Test>]
+    let registerUsage_existing () =
+        let (bot, time) = makeBot 10
+        bot.LastUsed.Add(420UL, time.Now)
+        time.OffsetTime 20
+        bot.registerUsage 420UL
+
+        bot.LastUsed[420UL] |> should equal time.Now
+        bot.LastUsed.Count |> should equal 1
