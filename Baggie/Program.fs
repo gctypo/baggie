@@ -11,7 +11,7 @@ open Microsoft.Extensions.DependencyInjection
 
 module Program =
 
-    let file : IFileContentProvider = FileContentProvider ()
+    let mutable file : IFileContentProvider = FileContentProvider ()
 
     let private startBot (token: string) =
         let config = DiscordConfiguration ()
@@ -54,7 +54,7 @@ module Program =
         else
             token
 
-    let private retrieveToken (tokenPath: string) =
+    let retrieveToken (tokenPath: string) =
         if isNull tokenPath then
             nullArg (nameof tokenPath)
         elif not (file.Exists(tokenPath)) then

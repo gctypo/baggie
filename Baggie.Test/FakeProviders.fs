@@ -2,6 +2,7 @@ namespace Baggie.Test
 
 open System
 open System.Collections.Generic
+open System.IO
 open Baggie
 
 type FakeTimeProvider (offsetSec: int) =
@@ -27,3 +28,12 @@ type FakeConfigProvider (timeoutStr: string) =
             | "baggie.timeoutSec" -> timeoutStr
             | "discord.tokenpath" -> "/tmp/baggie.tok"
             | _ -> raise (KeyNotFoundException($"Invalid config key {key}"))
+
+type FakeFileProvider (tokenPath: string, token: string) =
+    interface IFileContentProvider with
+        member this.Exists (path: string) =
+            path = tokenPath
+
+        member this.ReadAllText (path: string) =
+            if path = tokenPath then token
+            else raise (FileNotFoundException())
