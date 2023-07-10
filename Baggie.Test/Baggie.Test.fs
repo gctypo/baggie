@@ -1,8 +1,5 @@
 namespace Baggie.Test
 
-open System
-open System.IO
-open System.Text
 open Baggie
 
 open FsUnit
@@ -74,3 +71,50 @@ module TestBaggie =
 
         bot.LastUsed[420UL] |> should equal time.Now
         bot.LastUsed.Count |> should equal 1
+
+    [<Test>]
+    let respondTo () =
+        let (bot, _) = makeBot 10
+        let ctx = FakeContext ()
+        bot.respondTo ctx "test message"
+        |> Async.AwaitTask |> Async.RunSynchronously
+
+        ctx.IsTyping |> should be True
+        ctx.Response |> should equal (Some"test message")
+
+    [<Test>]
+    let sendPasta_new () =
+        let (bot, _) = makeBot 10
+        let ctx = FakeContext ()
+
+        bot.sendPasta ctx "nice pasta"
+        |> Async.AwaitTask |> Async.RunSynchronously
+
+        ctx.IsTyping |> should be True
+        ctx.Response |> should equal (Some("nice pasta"))
+
+    [<Test>]
+    let sendPasta_Later () =
+        let (bot, time) = makeBot 20
+        let ctx = FakeContext ()
+        bot.LastUsed[(ctx :> IContextAdapter).GuildId] <- time.Now
+        time.OffsetTime 60
+
+        bot.sendPasta ctx "nice pasta"
+        |> Async.AwaitTask |> Async.RunSynchronously
+
+        ctx.IsTyping |> should be True
+        ctx.Response |> should equal (Some("nice pasta"))
+
+    [<Test>]
+    let sendPasta_tooSoon () =
+        let (bot, time) = makeBot 30
+        let ctx = FakeContext ()
+        bot.LastUsed[(ctx :> IContextAdapter).GuildId] <- time.Now
+        time.OffsetTime 10
+
+        bot.sendPasta ctx "nice pasta"
+        |> Async.AwaitTask |> Async.RunSynchronously
+
+        ctx.IsTyping |> should be False
+        ctx.Response |> should equal None
