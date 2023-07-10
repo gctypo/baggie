@@ -31,10 +31,11 @@ type BaggieBot () =
     let minTime () =
         try
             appConfig.GetConfigValue "baggie.timeoutSec"
-            |> double
-        with | :? FormatException as ex ->
-            eprintf $"Failed to convert %s{ex.Source} to int"
-            eprintf $"{ex}"
+            |> float
+        with
+        | :? FormatException as ex ->
+            eprintf $"Failed to convert timeout %s{ex.Source} to number"
+            eprintf $"Falling back to default {BaggieVals.DEFAULT_TIMEOUT_SEC}"
             BaggieVals.DEFAULT_TIMEOUT_SEC
         |> TimeSpan.FromSeconds
 

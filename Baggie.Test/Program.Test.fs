@@ -15,6 +15,7 @@ module TestProgram =
 
     [<Test>]
     let retrieveToken_faked () =
+        ProviderBindings.setStdIO () |> ignore
         Program.file <- fakeFiles "generalkenobi"
         Program.retrieveToken tokenPath
         |> should equal "generalkenobi"
@@ -33,6 +34,7 @@ module TestProgram =
 
     [<Test>]
     let retrieveToken_emptyToken () =
+        ProviderBindings.setStdIO () |> ignore
         Program.file <- fakeFiles ""
         (fun () -> Program.retrieveToken tokenPath |> ignore)
         |> should throw typeof<ArgumentException>

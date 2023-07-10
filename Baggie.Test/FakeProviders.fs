@@ -5,6 +5,14 @@ open System.Collections.Generic
 open System.IO
 open Baggie
 
+module ProviderBindings =
+    let setStdIO () =
+        let out = new StringWriter()
+        Console.SetOut out
+        let err = new StringWriter()
+        Console.SetError err
+        (out, err)
+
 type FakeTimeProvider (offsetSec: int) =
     let START_TIME = DateTime (2000, 1, 1)
 

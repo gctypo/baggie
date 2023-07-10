@@ -1,5 +1,8 @@
 namespace Baggie.Test
 
+open System
+open System.IO
+open System.Text
 open Baggie
 
 open FsUnit
@@ -30,8 +33,12 @@ module TestBaggie =
     [<Test>]
     let minTime_appConfigBadFormat () =
         let (bot, _) = makeBotStr "hello there"
+        let (_, err) = ProviderBindings.setStdIO ()
+
         bot.MinTime.TotalSeconds
         |> should equal BaggieVals.DEFAULT_TIMEOUT_SEC
+        err.ToString()
+        |> should startWith "Failed to convert timeout"
 
     [<Test>]
     let isTooSoon_noKey () =
