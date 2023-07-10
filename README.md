@@ -5,6 +5,8 @@ D'awwww wook he's so embawassed uWu Does Baggie Waggie need a
 huggie wuggie poo? What about a kith? Baggie Waggie wan a kith?
 UwU ehe te nandayo~*
 
+(I'm not sorry.)
+
 -----
 
 The infamous `!baggie` Twitch command stumbles its way onto Discord.
