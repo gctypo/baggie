@@ -1,7 +1,12 @@
 #!/bin/sh
 
-echo "### RESTORING NUGET PACKAGES ###"
+echo -e "\n### RESTORING NUGET PACKAGES ###"
 dotnet restore
 
-echo "### BUILDING RELEASE BUILD ###"
+echo -e "\n### BUILDING RELEASE BUILD ###"
 dotnet build --configuration Release
+
+echo -e "\n### RUNNING TESTS ###"
+dotnet test
+
+echo -e "\n### DONE ###"
