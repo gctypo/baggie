@@ -39,14 +39,14 @@ type BaggieBot () =
             BaggieVals.DEFAULT_TIMEOUT_SEC
         |> TimeSpan.FromSeconds
 
-    let logPasta (logger: ILogger) (command: Command) (username: string) =
-        logger.Log (LogLevel.Information, $"Invoking {command} from user {username}")
+    let logPasta (logger: ILogger) (cmdName: string) (username: string) =
+        logger.Log (LogLevel.Information, $"Invoking {cmdName} from user {username}")
 
-    let logReject (logger: ILogger) (command: Command) (username: string) (guildId: uint64) =
+    let logReject (logger: ILogger) (cmdName: string) (username: string) (guildId: uint64) =
         let elapsed = time.Now - guildsLastUsed[guildId]
         logger.Log(
             LogLevel.Information,
-            $"Rejecting {command} from user {username}, \
+            $"Rejecting {cmdName} from user {username}, \
             only waited %.1f{elapsed.TotalSeconds} of {minTime().Seconds} sec"
         )
 
@@ -82,11 +82,11 @@ type BaggieBot () =
 
     member private this.sendPasta (ctx: ContextAdapter) (pasta: string) : Task =
         if this.isTooSoon ctx.Guild.Id then
-            logReject ctx.Client.Logger ctx.Command ctx.User.Username ctx.Guild.Id
+            logReject ctx.Client.Logger ctx.Command.Name ctx.User.Username ctx.Guild.Id
             Task.CompletedTask
         else
             this.registerUsage ctx.Guild.Id
-            logPasta ctx.Client.Logger ctx.Command ctx.User.Username
+            logPasta ctx.Client.Logger ctx.Command.Name ctx.User.Username
             pasta |> respondTo ctx
 
     [<Command "baggie">]

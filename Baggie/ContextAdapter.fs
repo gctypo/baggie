@@ -6,7 +6,7 @@ open DSharpPlus.Entities
 open Microsoft.Extensions.Logging
 
 type IContextAdapter =
-    abstract member Command : Command
+    abstract member CommandName : string
     abstract member Username : string
     abstract member GuildId : uint64
     abstract member Logger : ILogger
@@ -17,7 +17,7 @@ type ContextAdapter (ctx: CommandContext) =
     member public x.Context = ctx
 
     interface IContextAdapter with
-        member x.Command = ctx.Command
+        member x.CommandName = ctx.Command.Name
         member x.Username = ctx.User.Username
         member x.GuildId = ctx.Guild.Id
         member x.Logger = ctx.Client.Logger
@@ -25,7 +25,7 @@ type ContextAdapter (ctx: CommandContext) =
         member x.RespondAsync (msg: string) =
             ctx.RespondAsync msg
 
-    member public this.Command = (this :> IContextAdapter).Command
+    member public x.Command = ctx.Command
     member public x.User = ctx.User
     member public x.Guild = ctx.Guild
     member public x.Client = ctx.Client
